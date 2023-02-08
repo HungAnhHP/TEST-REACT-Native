@@ -6,8 +6,11 @@ import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from './configFirebase';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import SettingScreen from './src/setting';
+import { Feather } from '@expo/vector-icons'; 
+import { AntDesign } from '@expo/vector-icons';
+import ProfileScreen from './src/profile';
 const TEXT={
   lineHeight:30,
   height:45,
@@ -62,17 +65,17 @@ const styles = StyleSheet.create({
   }
 })
 const image = { uri: "https://reactjs.org/logo-og.png" };
-const Stack = createNativeStackNavigator();
-function HomeScreen({ route, navigation}) {
+
+function HomeScreen({ navigation}) {
   const Signout = () => {
     auth()
     .signOut()
     .then(() => Alert('User signed out!'));
   }
-  const {name} = route.params;
+  //const {name} = route.params;
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>HI <Text>{name}</Text></Text>
+      <Text>HI <Text></Text></Text>
       <View>
         <TouchableOpacity 
           onPress={() => {
@@ -88,7 +91,7 @@ function HomeScreen({ route, navigation}) {
 function LoginScreen({navigation}) {
    
   const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [password, setPassword] = useState('');
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
@@ -96,22 +99,23 @@ function LoginScreen({navigation}) {
     createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       const user = userCredential.user;
-      alert("Login!!")
-      navigation.navigate("Home", {name: ""+user.email });
+      alert("SignUp success")
+      navigation.navigate("HomeTabs");
     })
     .catch(error => {
       Alert.alert(error.message)
     })
   }
   const handleSignIn = () => {
-    signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      alert("Login!!")
-      navigation.navigate("Home", {name: email });
-    })
-    .catch(error => {
-      alert("Email or password wrong!!!")
-    })
+    // signInWithEmailAndPassword(auth, email, password)
+    // .then((userCredential) => {
+    //   alert("Login!!")
+    //   navigation.navigate("HomeTabs");
+    // })
+    // .catch(error => {
+    //   alert("Email or password wrong!!!")
+    // })
+    navigation.navigate("HomeTabs");
   }
 
   return (
@@ -122,11 +126,11 @@ function LoginScreen({navigation}) {
           {/* //Input and submit */}
           <View style={styles.header}>
               <View style={styles.input}>
-                <Text style={{...TEXT}}>User email</Text>
+                <Text style={{...TEXT}}> Email </Text>
                 <TextInput 
                  style={styles.inputText} 
                  placeholder='Enter email'
-                  value={email}
+                 value={email}
                  onChangeText={text => setEmail(text)}
                 />
               </View>
@@ -148,6 +152,11 @@ function LoginScreen({navigation}) {
                   style={styles.button}>
                   <Text>Login</Text>
                 </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={handleSignIn}
+                  style={[styles.button, {marginTop:5}]}>
+                  <Text>Login Google</Text>
+                </TouchableOpacity>
               </View> 
           </View>
           {/* //Create an account */}
@@ -165,12 +174,41 @@ function LoginScreen({navigation}) {
  </ImageBackground>
   );
 }
-  
+const Tab = createBottomTabNavigator();
+
+function MyTabs() {
+  return (
+    <Tab.Navigator screenOptions={{headerShown: false}}>
+      <Tab.Screen name="Home" component={HomeScreen} 
+        options={{
+          tabBarIcon:() => (
+            <Feather name="home" size={24} color="black" />
+          ) 
+      }}/>
+      <Tab.Screen name="Settings" component={SettingScreen} 
+        options={{
+          tabBarIcon:() => (
+            <AntDesign name="setting" size={24} color="black" 
+              resizeMode="stretch"
+            />
+          ) 
+        }}/>
+      <Tab.Screen name="Profile" component={ProfileScreen} 
+        options={{
+          tabBarIcon:() => (
+            <AntDesign name="profile" size={24} color="black" />
+          ) 
+        }}/>
+    </Tab.Navigator>
+  );
+}
+const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Navigator initialRouteName="Login" screenOptions={{
+    headerShown: false}}>
+        <Stack.Screen name="HomeTabs" component={MyTabs} />
         <Stack.Screen name="Login" component={LoginScreen} />
       </Stack.Navigator>
      </NavigationContainer>
